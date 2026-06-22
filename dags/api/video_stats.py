@@ -1,20 +1,24 @@
 import requests
 import json
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
+# BASE_DIR = Path(__file__).resolve().parent
+# load_dotenv(BASE_DIR / ".env")
 from pathlib import Path
 from datetime import date
+from airflow.decorators import task
+from airflow.models import variable
 
 
-BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(BASE_DIR / ".env")
 
-
-API_KEY = os.getenv("API_KEY")
-CHANNEL_HANDLE = "bendu78130new"
+API_KEY = variable.get("API_KEY")
+CHANNEL_HANDLE = variable.get("bendu78130new")
 maxResults = 10
 
+# prepare script to use dag
 
+
+@task()
 def get_playlist_id():
 
     try:
@@ -46,6 +50,7 @@ def get_playlist_id():
         raise e
     
 
+@task()
 def get_video_ids(playlistId):
 
     video_ids=[]
@@ -86,6 +91,7 @@ def get_video_ids(playlistId):
         raise e
 
 
+@task()
 def extract_video_data(video_ids):
 
     extracted_data = []
@@ -131,6 +137,8 @@ def extract_video_data(video_ids):
     except requests.exceptions.RequestException as e:
         raise e
 
+
+@task()
 def save_to_json(extracted_data):
 
     file_path = f"./data/YT_Data_{date.today()}.json"

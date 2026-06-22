@@ -9,9 +9,13 @@ function create_user_and_database() {
     local password=$3
     echo "Creating user '$username' and database '$database'"
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
-        CREATE USER $username WITH PASSWORD '$password';
-        CREATE DATABASE $database;
-        GRANT ALL PRIVILEGES ON DATABASE $database TO $username;
+        SELECT 'CREATE USER "$username" WITH PASSWORD ''$password'''
+        WHERE NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$username')\\gexec
+
+        SELECT 'CREATE DATABASE "$database"'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$database')\\gexec
+
+        GRANT ALL PRIVILEGES ON DATABASE "$database" TO "$username";
 EOSQL
     echo "  User '$username' and database '$database' created successfully"
 }
