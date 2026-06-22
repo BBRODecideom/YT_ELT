@@ -1,11 +1,11 @@
 from airflow import DAG
-import pendelum
+import pendulum
 from datetime import datetime, timedelta
 from api.video_stats import get_playlist_id, get_video_ids, extract_video_data, save_to_json
 
 
 #Default time
-local_tz = pendelum.timezone("Europe/France")
+local_tz = pendulum.timezone("Europe/Paris")
 
 #Default args
 default_args = {
