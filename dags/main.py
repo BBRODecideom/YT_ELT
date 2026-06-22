@@ -27,7 +27,7 @@ default_args = {
 with DAG(
 
     dag_id='produce_json',
-    default_arg=defaultçargs;
+    default_args=default_args,
     description= 'DAG to produce json file with raw data from youtube api',
     schedule='0 14 * * *',
     catchup=False
@@ -44,4 +44,4 @@ with DAG(
     #DEFINE DEPENDENCIES
     playlist_id >> video_ids >> extract_data >> save_to_json_task
 
-    
+
