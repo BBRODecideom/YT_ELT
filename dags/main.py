@@ -19,8 +19,8 @@ default_args = {
     #"retry_delay" : timedelta(minutes=5),
     "max_active_runs" : 1,
     "dag_run_timeout" : timedelta(minutes=60),
-    "start_date": datetime(2016, 1, 1, tzinfo=local_tz),
-    "end_date": datetime(2016, 7, 1, tzinfo=local_tz),
+    "start_date": datetime(2026, 1, 1, tzinfo=local_tz),
+    #"end_date": datetime(2026, 7, 1, tzinfo=local_tz),
 
 }
 
