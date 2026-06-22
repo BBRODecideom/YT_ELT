@@ -7,12 +7,12 @@ import os
 from pathlib import Path
 from datetime import date
 from airflow.decorators import task
-from airflow.models import variable
+from airflow.models import Variable
 
 
 
-API_KEY = variable.get("API_KEY")
-CHANNEL_HANDLE = variable.get("bendu78130new")
+API_KEY = Variable.get("API_KEY")
+CHANNEL_HANDLE = Variable.get("CHANNEL_HANDLE")
 maxResults = 10
 
 # prepare script to use dag
