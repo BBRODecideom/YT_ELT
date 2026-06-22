@@ -86,7 +86,7 @@ def get_video_ids(playlistId):
         raise e
 
 
-def extract_video_data(video_id):
+def extract_video_data(video_ids):
 
     extracted_data = []
 
