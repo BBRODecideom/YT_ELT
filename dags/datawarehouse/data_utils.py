@@ -1,5 +1,5 @@
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from psycopg2.extras import RealDictCusrsor
+from psycopg2.extras import RealDictCursor
 
 table = 'youtube_api'
 
@@ -73,31 +73,40 @@ def create_table(schema, table):
         # SQL query to create the table if it doesn't exist
         create_table_query = f"""
         CREATE TABLE IF NOT EXISTS {schema}.{table} (
-            Video_ID VARCHAR(211) PRIMARY KEY NOT NULL,
-            Video_Title TEXT NOT NULL,
-            Uploaded_Date TIMESTAMP NOT NULL,
-            Duration VARCHAR(20) NOT NULL,
-            Views_Count BIGINT,
-            Likes_Count BIGINT,
-            Comments_Count BIGINT
+            "Video_ID" VARCHAR(211) PRIMARY KEY NOT NULL,
+            "Video_Title" TEXT NOT NULL,
+            "Uploaded_Date" TIMESTAMP NOT NULL,
+            "Duration" VARCHAR(20) NOT NULL,
+            "Views_Count" BIGINT,
+            "Likes_Count" BIGINT,
+            "Comments_Count" BIGINT
         );
         """
     else:
         # SQL query to create the table if it doesn't exist
         create_table_query = f"""
         CREATE TABLE IF NOT EXISTS {schema}.{table} (
-            Video_ID VARCHAR(211) PRIMARY KEY NOT NULL,
-            Video_Title TEXT NOT NULL,
-            Uploaded_Date TIMESTAMP NOT NULL,
-            Duration TIME NOT NULL,
-            Views_Count BIGINT,
-            Likes_Count BIGINT,
-            Comments_Count BIGINT
+            "Video_ID" VARCHAR(211) PRIMARY KEY NOT NULL,
+            "Video_Title" TEXT NOT NULL,
+            "Uploaded_Date" TIMESTAMP NOT NULL,
+            "Duration" TIME NOT NULL,
+            "Video_Type" VARCHAR(20) NOT NULL,
+            "Views_Count" BIGINT,
+            "Likes_Count" BIGINT,
+            "Comments_Count" BIGINT
         );
         """
 
     # Execute the query
     cur.execute(create_table_query)
+
+    if schema != 'staging':
+        cur.execute(
+            f"""
+            ALTER TABLE {schema}.{table}
+            ADD COLUMN IF NOT EXISTS "Video_Type" VARCHAR(20);
+            """
+        )
     
     # Commit the changes
     conn.commit()

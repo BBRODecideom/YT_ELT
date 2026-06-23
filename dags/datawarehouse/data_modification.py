@@ -20,8 +20,8 @@ def insert_rows(cur,conn,schema,row):
             video_id = 'video_id'
 
             cur.execute(
-                f"""INSERT INTO {schema}.{table} (Video_ID, Video_Title, Uploaded_Date, Duration, Video_Views, Like_Count, Comment_Count) 
-                    VALUES (%(video_id)s, %(title)s, %(published_at)s, %(duration)s, %(viewcount)s, %(likecount)s, %(commentcount)s)
+                f"""INSERT INTO {schema}.{table} ("Video_ID", "Video_Title", "Uploaded_Date", "Duration", "Views_Count", "Likes_Count", "Comments_Count")
+                    VALUES (%(video_id)s, %(title)s, %(publishedAt)s, %(duration)s, %(viewCount)s, %(likeCount)s, %(commentCount)s)
                 """
                 , row
             ) 
@@ -31,15 +31,15 @@ def insert_rows(cur,conn,schema,row):
             video_id = 'Video_ID'
 
             cur.execute(
-                f"""INSERT INTO {schema}.{table} (Video_ID, Video_Title, Uploaded_Date, Duration, Video_Views, Like_Count, Comment_Count) 
-                    VALUES (%(Video_ID)s, %(Video_Title)s, %(Uploaded_Date)s, %(Duration)s, %(Video_Views)s, %(Likes_Count)s, %(Comments_Count)s);
+                f"""INSERT INTO {schema}.{table} ("Video_ID", "Video_Title", "Uploaded_Date", "Duration", "Video_Type", "Views_Count", "Likes_Count", "Comments_Count")
+                    VALUES (%(Video_ID)s, %(Video_Title)s, %(Uploaded_Date)s, %(Duration)s, %(Video_Type)s, %(Views_Count)s, %(Likes_Count)s, %(Comments_Count)s);
                 """
                 , row
             )
         
         conn.commit()
         
-        logger.info(f"Inserted row with Video_ID {row['video_id']} ")
+        logger.info(f"Inserted row with Video_ID {row[video_id]} ")
 
     except Exception as e:
         logger.error(f"Error inserting row into {schema}.{table}: {e}")
@@ -61,37 +61,41 @@ def update_rows(cur,conn,schema,row):
         #staging
         if schema == 'staging':
             video_id = 'video_id'
-            uploaded_date = 'published_at'
-            title = 'title'
-            video_views = 'viewcount'
-            like_count = 'likecount'
-            comment_count = 'commentcount'
+            cur.execute(
+                f"""UPDATE {schema}.{table}
+                    SET "Video_Title" = %(title)s,
+                        "Uploaded_Date" = %(publishedAt)s,
+                        "Duration" = %(duration)s,
+                        "Views_Count" = %(viewCount)s,
+                        "Likes_Count" = %(likeCount)s,
+                        "Comments_Count" = %(commentCount)s
+                    WHERE "Video_ID" = %(video_id)s;
+                """
+                , row
+            )
         #core
         else: 
             video_id = 'Video_ID'
-            uploaded_date = 'Uploaded_Date'
-            title = 'Video_Title'
-            video_views = 'Video_Views'
-            like_count = 'Likes_Count'
-            comment_count = 'Comments_Count'
-
-        cur.execute(
-            f"""UPDATE {schema}.{table} 
-                SET "Video_Title" = %(video_title)s, 
-                    "Video_Views" = %(video_views)s, 
-                    "Likes_Count" = %(likes_count)s, 
-                    "Comments_Count" = %(comments_count)s
-                WHERE "Video_ID" = %(video_id)s and "Uploaded_Date" = %(uploaded_date)s;
-            """
-            , row
-        )
+            cur.execute(
+                f"""UPDATE {schema}.{table}
+                    SET "Video_Title" = %(Video_Title)s,
+                        "Uploaded_Date" = %(Uploaded_Date)s,
+                        "Duration" = %(Duration)s,
+                        "Video_Type" = %(Video_Type)s,
+                        "Views_Count" = %(Views_Count)s,
+                        "Likes_Count" = %(Likes_Count)s,
+                        "Comments_Count" = %(Comments_Count)s
+                    WHERE "Video_ID" = %(Video_ID)s;
+                """
+                , row
+            )
 
         conn.commit()
 
-        logger.info(f"Updated row with Video_ID {row['video_id']} ")
+        logger.info(f"Updated row with Video_ID {row[video_id]} ")
 
     except Exception as e:
-        logger.error(f"Error updating row with Video_ID {row['video_id']} in {schema}.{table}: {e}")
+        logger.error(f"Error updating row with Video_ID {row[video_id]} in {schema}.{table}: {e}")
         raise e
     
 
@@ -107,12 +111,8 @@ def delete_rows(cur, conn, schema, ids_to_delete):
     """
     try:
         # Define the ids to delete in a format suitable for SQL query
-        ids_to_delete = f"""({', '.join(f"'{id}'" for id in ids_to_delete)})"""
-        # Prepare the SQL query for deletion
-        delete_query = f"DELETE FROM {schema}.{table} WHERE 'Video_ID' IN {ids_to_delete};"
-        
-        # Execute the deletion query
-        cur.execute(delete_query)
+        delete_query = f"""DELETE FROM {schema}.{table} WHERE "Video_ID" = ANY(%s);"""
+        cur.execute(delete_query, (list(ids_to_delete),))
         
         # Commit the changes to the database
         conn.commit()
