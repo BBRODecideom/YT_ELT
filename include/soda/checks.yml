@@ -1,0 +1,18 @@
+checks for youtube_api:
+  - missing_count("Video_ID") = 0
+  - duplicate_count("Video_ID") = 0
+
+  - likes_count_greater_than_video_views = 0:
+      name: check for like_count column greater than video views
+      likes_count_greater_than_video_views query: |
+        SELECT COUNT(*)
+        FROM youtube_api
+        WHERE "Likes_Count" > "Views_Count"
+
+  - comments_count_greater_than_video_views = 0:
+      name: check for like_count column greater than video views
+      comments_count_greater_than_video_views query: |
+        SELECT COUNT(*)
+        FROM youtube_api
+        WHERE "Comments_Count" > "Views_Count"
+

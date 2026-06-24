@@ -13,7 +13,7 @@ from airflow.models import Variable
 
 API_KEY = Variable.get("API_KEY")
 CHANNEL_HANDLE = Variable.get("CHANNEL_HANDLE")
-maxResults = 10
+maxResults = 50
 
 # prepare script to use dag
 
