@@ -1,5 +1,6 @@
 from airflow import DAG
 import pendulum
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from datetime import datetime, timedelta
 from api.video_stats import get_playlist_id, get_video_ids, extract_video_data, save_to_json
 from datawarehouse.data_warehouse import stagging_table, core_table
@@ -38,17 +39,22 @@ with DAG(
     schedule='0 14 * * *',
     catchup=False
 
-) as dag:
+) as dag_produce:
 
 
     #DEFINE TASKS
     playlist_id = get_playlist_id()
     video_ids = get_video_ids(playlist_id)
     extract_data = extract_video_data(video_ids)
-    save_to_json_task = save_to_json(extract_data)   
+    save_to_json_task = save_to_json(extract_data)
+
+    trigger_update_db = TriggerDagRunOperator(
+        task_id="trigger_update_db",
+        trigger_dag_id="update_db"
+    )
 
     #DEFINE DEPENDENCIES
-    playlist_id >> video_ids >> extract_data >> save_to_json_task
+    playlist_id >> video_ids >> extract_data >> save_to_json_task >> trigger_update_db
 
 
 with DAG(
@@ -56,18 +62,23 @@ with DAG(
     dag_id='update_db',
     default_args=default_args,
     description= 'DAG to process json file and insert data into both stagging and core schema',
-    schedule='0 15 * * *',
+    schedule=None,
     catchup=False
 
-) as dag:
+) as dag_update:
 
 
     #DEFINE TASKS
     update_staging = stagging_table()
-    update_core = core_table()  
+    update_core = core_table()
+
+    trigger_data_quality = TriggerDagRunOperator(
+        task_id="trigger_data_quality",
+        trigger_dag_id="data_quality"
+    )
 
     #DEFINE DEPENDENCIES
-    update_staging >> update_core 
+    update_staging >> update_core >> trigger_data_quality
 
 
 with DAG(
@@ -75,10 +86,10 @@ with DAG(
     dag_id='data_quality',
     default_args=default_args,
     description= 'DAG to check data quality on both layer in the db',
-    schedule='0 16 * * *',
+    schedule=None,
     catchup=False
 
-) as dag:
+) as dag_quality:
 
 
     #DEFINE TASKS
