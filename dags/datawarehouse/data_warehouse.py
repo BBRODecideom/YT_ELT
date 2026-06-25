@@ -76,9 +76,39 @@ def core_table():
 
         current_video_ids = set()
 
-        cur.execute(f"select * from staging.{table};")
-        rows = cur.fetchall()
+        # Fix error on table already exist
+        cur.execute(f"DROP TABLE IF EXISTS core.{table}_rejected;")
+        cur.execute(f"DROP TABLE IF EXISTS core.{table};")
 
+        # 1. Gestion des rejets (Création de la table directement en SQL)
+        cur.execute(f"""
+                    CREATE TABLE core.{table}_rejected AS
+                    SELECT *
+                    FROM staging.{table}
+                    WHERE "Comments_Count" > "Views_Count";
+                """)
+
+        # 2. S'assurer que la table principale existe (SANS LA DROP)
+        # S'il s'agit du premier run, elle sera créée avec la même structure que la table staging
+        cur.execute(f"""
+            CREATE TABLE IF NOT EXISTS core.{table} 
+            (LIKE staging.{table} INCLUDING ALL);
+        """)
+        cur.execute(f"""
+            ALTER TABLE core.{table}
+            ADD COLUMN IF NOT EXISTS "Video_Type" VARCHAR(255);
+        """)
+
+        # 3. Récupération des données VALIDES pour le traitement Python
+        # On utilise un SELECT classique, donc fetchall() va fonctionner
+        #cur.execute(f"""CREATE TABLE core.{table} AS SELECT * FROM staging.{table} WHERE "Comments_Count" <= "Views_Count";""")
+        cur.execute(f"""SELECT * FROM staging.{table} WHERE "Comments_Count" <= "Views_Count";""")
+        rows = cur.fetchall()
+        # Pour obtenir le nombre de lignes insérées dans la dernière table créée :
+        row_updated = cur.rowcount
+        print(f"This is the number of ligne updated in core.{table} : {len(rows)}")
+
+        # 4. Application de ta logique d'origine sur les lignes récupérées
         for row in rows:
             transformed_row = transform_data(row)
             current_video_ids.add(transformed_row['Video_ID'])

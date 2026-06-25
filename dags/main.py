@@ -82,8 +82,8 @@ with DAG(
 
 
     #DEFINE TASKS
-    soda_validate_staging = youtube_elt_data_quality(staging_schema)
-    soda_validate_core = youtube_elt_data_quality(core_schema)  
+    soda_validate_staging = youtube_elt_data_quality(staging_schema, trigger_rule="all_done")
+    soda_validate_core = youtube_elt_data_quality(core_schema, trigger_rule="all_done") 
 
     #DEFINE DEPENDENCIES
     soda_validate_staging >> soda_validate_core 

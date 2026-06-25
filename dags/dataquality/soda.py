@@ -7,12 +7,13 @@ SODA_PATH = "/opt/airflow/include/soda"
 DATASOURCE = "pg_datasource"
 
 
-def youtube_elt_data_quality(schema):
+def youtube_elt_data_quality(schema, trigger_rule=None):
 
     try:
         task = BashOperator(
             task_id=f"soda_test_{schema}",
             bash_command=f"soda scan -d {DATASOURCE} -c {SODA_PATH}/configuration.yml -v SCHEMA={schema} {SODA_PATH}/checks.yml",
+            trigger_rule=trigger_rule
         )
         return task
     
