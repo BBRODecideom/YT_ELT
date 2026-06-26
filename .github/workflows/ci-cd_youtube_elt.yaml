@@ -16,18 +16,30 @@ jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - name: Checkout code
+=======
+      - name: checkout code
+>>>>>>> 64912b891c614e7f9ac535e919f4f8053c2bfff1
         uses: actions/checkout@V4
       - name: Get changed files
         id: changed-files-build
         uses: tj-actions/changed-files@v45
         with:
           files: |
+<<<<<<< HEAD
               Dockerfile
               requirements.txt
       - name: Set up docker buildx
         if: steps.changed-files-build.outputs.any_changed == 'true'
         uses: docker/setup-buildx-action@v4
+=======
+            Dockerfile
+            requirements.txt
+      - name: Set up docker buildx
+        if: steps.changed-files-build.outputs.any_changed == 'true'
+        uses: docker/setup-buildx-action@v3
+>>>>>>> 64912b891c614e7f9ac535e919f4f8053c2bfff1
       - name: Log in to dockerhub
         if: steps.changed-files-build.outputs.any_changed == 'true'
         uses: docker/login-action@v3
