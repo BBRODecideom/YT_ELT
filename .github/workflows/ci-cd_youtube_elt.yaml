@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - 'feature/*''
+      - 'feature/*'
 
   pull_request:
     branches:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@V4
+        uses: actions/checkout@v4
       - name: Get changed files
         id: changed-files-build
         uses: tj-actions/changed-files@v45
@@ -69,7 +69,7 @@ jobs:
       DOCKERHUB_REPOSITORY: ${{ vars.DOCKERHUB_REPOSITORY }}
       DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }} 
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@V4
       - name: Get changed files
         id: changed-files-tests
@@ -80,20 +80,20 @@ jobs:
             include/**
             docker-compose.yaml
       - name: Set up docker compose
-        if: steps.changed-files-build.outputs.any_changed == 'true'
+        if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: docker compose up -d       
       - name: Run unit and integration tests
-        if: steps.changed-files-build.outputs.any_changed == 'true'
+        if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: docker exec -t airflow-worker sh -c "pytest tests/ -v"
       - name: Run end to end DAG tests
-        if: steps.changed-files-build.outputs.any_changed == 'true'
+        if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: |
           DAG_NAMES=("produce_json" "update_db" "data_quality")      
           for DAG in "${DAG_NAMES[@]}"; do
-            docker exec -t airflow-worker sh -c "airflow dags tes $DAG"
+            docker exec -t airflow-worker sh -c "airflow dags test $DAG"
           done
       - name: Tear down docker compose
-        if: steps.changed-files-build.outputs.any_changed == 'true'
+        if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: docker compose down       
 
 
