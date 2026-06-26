@@ -70,7 +70,7 @@ jobs:
       DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }} 
     steps:
       - name: Checkout code
-        uses: actions/checkout@V4
+        uses: actions/checkout@v4
       - name: Get changed files
         id: changed-files-tests
         uses: tj-actions/changed-files@v45
